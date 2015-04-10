@@ -45,24 +45,28 @@
 
 - (void)register:(CDVInvokedUrlCommand*)command;
 {
-	self.callbackId = command.callbackId;
-
-    NSMutableDictionary* options = [command.arguments objectAtIndex:0];
+    self.callbackId = command.callbackId;
     
-    if ([NSProcessInfo instancesRespondToSelector:@selector(isOperatingSystemAtLeastVersion:)]) {
-        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:(UIRemoteNotificationTypeBadge
-                                                                                             |UIRemoteNotificationTypeSound
-                                                                                             |UIRemoteNotificationTypeAlert) categories:nil];
-        [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
+    NSLog(@"registerForPushNotification");
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
+    {
         
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0 //__IPHONE_8_0 is not defined in old xcode (==0). Then use 80000
+        
+        NSLog(@"registerForPushNotification: For iOS >= 8.0");
+        
+        [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
+        [[UIApplication sharedApplication] registerForRemoteNotifications];
+#endif
     } else {
-        UIRemoteNotificationType myTypes = UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound;
-        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:myTypes];
+        NSLog(@"registerForPushNotification: For iOS < 8.0");
+        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:
+         (UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
     }
-
-
-	if (notificationMessage)			// if there is a pending startup notification
-		[self notificationReceived];	// go ahead and process it
+    
+    
+    if (notificationMessage)			// if there is a pending startup notification
+        [self notificationReceived];	// go ahead and process it
 }
 
 /*
