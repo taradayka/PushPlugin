@@ -46,6 +46,7 @@
 - (void)register:(CDVInvokedUrlCommand*)command;
 {
     self.callbackId = command.callbackId;
+    NSMutableDictionary* options = [command.arguments objectAtIndex:0];
     
     NSLog(@"registerForPushNotification");
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
@@ -64,6 +65,7 @@
          (UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
     }
     
+    self.callback = [options objectForKey:@"ecb"];
     
     if (notificationMessage)			// if there is a pending startup notification
         [self notificationReceived];	// go ahead and process it
